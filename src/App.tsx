@@ -1,21 +1,44 @@
 import { useState, useEffect, useRef } from 'react';
 import './index.css';
-import backgroundImages from './vars.tsx';
-import { shuffleArray, preloadImage, calculateSplitAmount, updateLocalStorageWithData } from './helpers.tsx';
+import backgroundImages from './vars';
+import { shuffleArray, preloadImage, calculateSplitAmount, updateLocalStorageWithData } from './helpers';
+
+// Define interfaces for types used in your application
+interface HistoryItem {
+  totalAmount: string;
+  finalAmountPerPerson: string;
+  timestamp: string;
+  groupSize: number;
+}
+
+interface SplitResult {
+  totalAmount: string;
+  numPeople: string;
+  transferFee: string;
+  totalFeesResult: string;
+  finalAmountPerPerson: string;
+}
+
+// Import NodeJS namespace for Timeout type
+declare global {
+  namespace NodeJS {
+    interface Timeout {}
+  }
+}
 
 function App() {
-  const [totalAmount, setTotalAmount] = useState('');
-  const [numPeople, setNumPeople] = useState(localStorage.getItem('numPeople') || '2');
-  const [historyData, setHistoryData] = useState([]);
-  const [showHistory, setShowHistory] = useState(false);
-  const [splitResult, setSplitResult] = useState(null);
-  const [showResultCard, setShowResultCard] = useState(false);
+  const [totalAmount, setTotalAmount] = useState<string>('');
+  const [numPeople, setNumPeople] = useState<string>(localStorage.getItem('numPeople') || '2');
+  const [historyData, setHistoryData] = useState<HistoryItem[]>([]);
+  const [showHistory, setShowHistory] = useState<boolean>(false);
+  const [splitResult, setSplitResult] = useState<SplitResult | null>(null);
+  const [showResultCard, setShowResultCard] = useState<boolean>(false);
   const totalCapableAmount = 999999999999999;
-  const hideHistoryTimerRef = useRef(null);
+  const hideHistoryTimerRef = useRef<number | NodeJS.Timeout | null>(null);
 
-  const [currentBackgroundImage, setCurrentBackgroundImage] = useState('');
-  const [totalFromHistory, setTotalFromHistory] = useState(0);
-  const [personalTotal, setPersonalTotal] = useState(0);
+  const [currentBackgroundImage, setCurrentBackgroundImage] = useState<string>('');
+  const [totalFromHistory, setTotalFromHistory] = useState<number>(0);
+  const [personalTotal, setPersonalTotal] = useState<number>(0);
 
   function setRandomBackground() {
     const index = Math.floor(Math.random() * backgroundImages.length);
@@ -42,8 +65,8 @@ function App() {
     const savedHistory = JSON.parse(localStorage.getItem('data') || '[]');
     setHistoryData(savedHistory);
 
-    const total = savedHistory.reduce((acc, item) => acc + parseFloat(item.totalAmount.replace('$', '').replace(/,/g, '')), 0);
-    const personal = savedHistory.reduce((acc, item) => acc + parseFloat(item.finalAmountPerPerson.replace('$', '').replace(/,/g, '')), 0);
+    const total = savedHistory.reduce((acc: number, item: HistoryItem) => acc + parseFloat(item.totalAmount.replace('$', '').replace(/,/g, '')), 0);
+    const personal = savedHistory.reduce((acc: number, item: HistoryItem) => acc + parseFloat(item.finalAmountPerPerson.replace('$', '').replace(/,/g, '')), 0);
     setTotalFromHistory(total);
     setPersonalTotal(personal);
   }, []);
@@ -65,12 +88,12 @@ function App() {
     if (splitResult) {
       if (window.confirm('Are you sure you want to save the data?')) {
         const existingData = JSON.parse(localStorage.getItem('data') || '[]');
-        existingData.push({ ...splitResult, timestamp: new Date().toLocaleString(), groupSize: numPeople });
+        existingData.push({ ...splitResult, timestamp: new Date().toLocaleString(), groupSize: parseInt(numPeople) });
         localStorage.setItem('data', JSON.stringify(existingData));
         setHistoryData(existingData);
 
-        const total = existingData.reduce((acc, item) => acc + parseFloat(item.totalAmount.replace('$', '').replace(/,/g, '')), 0);
-        const personal = existingData.reduce((acc, item) => acc + parseFloat(item.finalAmountPerPerson.replace('$', '').replace(/,/g, '')), 0);
+        const total = existingData.reduce((acc: number, item: HistoryItem) => acc + parseFloat(item.totalAmount.replace('$', '').replace(/,/g, '')), 0);
+        const personal = existingData.reduce((acc: number, item: HistoryItem) => acc + parseFloat(item.finalAmountPerPerson.replace('$', '').replace(/,/g, '')), 0);
         setTotalFromHistory(total);
         setPersonalTotal(personal);
       }
@@ -94,16 +117,22 @@ function App() {
     setShowHistory(false);
   };
 
-  const loadHistoryData = (data) => {
+  const loadHistoryData = (data: HistoryItem) => {
     setTotalAmount(data.totalAmount.replace('$', '').replace(/,/g, ''));
-    setNumPeople(data.numPeople);
-    setSplitResult(data);
+    setNumPeople(data.groupSize.toString());
+    setSplitResult({
+      totalAmount: data.totalAmount,
+      numPeople: data.groupSize.toString(),
+      transferFee: '', // or any default value
+      totalFeesResult: '', // or any default value
+      finalAmountPerPerson: data.finalAmountPerPerson
+    });
     setShowResultCard(true);
   };
 
   const handleMouseEnterHistory = () => {
     if (hideHistoryTimerRef.current) {
-      clearTimeout(hideHistoryTimerRef.current);
+      clearTimeout(hideHistoryTimerRef.current as number);
       hideHistoryTimerRef.current = null;
     }
     setShowHistory(true);
@@ -127,21 +156,26 @@ function App() {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.json';
-        input.onchange = (e) => {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const importedData = event.target.result;
-                const parsedData = JSON.parse(importedData);
-                const updatedData = updateLocalStorageWithData(parsedData);
-                setHistoryData(prevHistory => [...prevHistory, ...updatedData]);
+        input.onchange = (e: Event) => {
+            const target = e.target as HTMLInputElement;
+            const file = target.files?.[0];
+            if (file) {
+              const reader = new FileReader();
+              reader.onload = (event: ProgressEvent<FileReader>) => {
+                  const importedData = event.target?.result as string;
+                  if (importedData) {
+                    const parsedData = JSON.parse(importedData);
+                    const updatedData = updateLocalStorageWithData(parsedData);
+                    setHistoryData(prevHistory => [...prevHistory, ...updatedData]);
 
-                const total = updatedData.reduce((acc, item) => acc + parseFloat(item.totalAmount.replace('$', '').replace(/,/g, '')), 0);
-                const personal = updatedData.reduce((acc, item) => acc + parseFloat(item.finalAmountPerPerson.replace('$', '').replace(/,/g, '')), 0);
-                setTotalFromHistory(prevTotal => prevTotal + total);
-                setPersonalTotal(prevPersonal => prevPersonal + personal);
-            };
-            reader.readAsText(file);
+                    const total = updatedData.reduce((acc: number, item: HistoryItem) => acc + parseFloat(item.totalAmount.replace('$', '').replace(/,/g, '')), 0);
+                    const personal = updatedData.reduce((acc: number, item: HistoryItem) => acc + parseFloat(item.finalAmountPerPerson.replace('$', '').replace(/,/g, '')), 0);
+                    setTotalFromHistory(prevTotal => prevTotal + total);
+                    setPersonalTotal(prevPersonal => prevPersonal + personal);
+                  }
+              };
+              reader.readAsText(file);
+            }
         };
         input.click();
     }
@@ -156,7 +190,7 @@ function App() {
         <a href="#" onClick={handleExport}>Export</a>
         <a href="readme.md">Help</a>
       </div>
-  
+
       {showHistory && (
         <div
             id="historyContainer"
