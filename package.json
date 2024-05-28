@@ -1,6 +1,7 @@
 {
   "name": "uec-splitter",
-  "private": true,
+  "private": false,
+  "homepage": "https://RareMojo.github.io/uec-splitter",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
