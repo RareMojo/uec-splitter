@@ -41,7 +41,7 @@ body {
   top: -2.5%;
   left: 97%;
   width: 2.5%;
-  height: 10%;
+  height: 9%;
   z-index: 1000;
   background: url('https://support.robertsspaceindustries.com/hc/article_attachments/360022704853/MadeByTheCommunity_White.png') no-repeat center/100%;
 }
@@ -325,4 +325,8 @@ a:hover {
 
 a:visited {
   color: #65b67a;
+}
+
+a:active {
+  color: #6d5dbb;
 }

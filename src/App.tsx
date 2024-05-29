@@ -188,7 +188,7 @@ function App() {
         <a href="#" onClick={() => setShowHistory(!showHistory)}>History</a>
         <a href="#" onClick={handleImport}>Import</a>
         <a href="#" onClick={handleExport}>Export</a>
-        <a href="readme.md">Help</a>
+        <a href="https://github.com/RareMojo/uec-splitter">Help</a>
       </div>
 
       {showHistory && (
