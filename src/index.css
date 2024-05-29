@@ -38,12 +38,12 @@ body {
 
 .corner-logo {
   position: absolute;
-  top: -2.5%;
+  top: -1.5px;
   left: 97%;
-  width: 2.5%;
-  height: 9%;
+  width: 50px;
+  height: 50px;
   z-index: 1000;
-  background: url('https://support.robertsspaceindustries.com/hc/article_attachments/360022704853/MadeByTheCommunity_White.png') no-repeat center/100%;
+  background: url(https://support.robertsspaceindustries.com/hc/article_attachments/360022704853/MadeByTheCommunity_White.png) no-repeat center/100%;
 }
 
 .logo:hover {
