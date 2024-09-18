@@ -1,7 +1,15 @@
 # UEC Splitter App
 
 
-## Usage Instructions
+## Where to get it?
+
+You can download the code and run this on your local machine if you wish.
+A much easier way would be to simply use the deployment page clicking the link below.
+It is all locally saved data and is not connected to anything online.
+
+[UEC Splitter App](https://raremojo.github.io/uec-splitter/)
+
+## Instructions
 
 Enter the total amount to split and the number of people. The results will be displayed below. If the amount exceeds the maximum limit, an alert will appear. You can save an entry to the history by clicking the "Save Data" button on the results card. To manage your history:
 
